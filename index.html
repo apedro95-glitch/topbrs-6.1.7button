@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SISTEMA AUTOMÁTICO TOP BRS' 🇧🇷">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <title>SISTEMA AUTOMÁTICO TOP BRS' 🇧🇷 — PWA V6.1.7</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <div id="authGate" class="auth-gate">
+    <div class="auth-backdrop"></div>
+    <div class="auth-card glass">
+      <div class="auth-brand">SISTEMA AUTOMÁTICO TOP BRS' 🇧🇷</div>
+      <h1 class="auth-title">Acesso ao Sistema</h1>
+      <p class="auth-subtitle">Entre para acompanhar o clã em tempo real ou crie sua conta.</p>
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-auth-tab="login">Login</button>
+        <button type="button" class="auth-tab" data-auth-tab="register">Cadastre-se</button>
+      </div>
+      <form id="loginForm" class="auth-form">
+        <label class="field"><span>Email</span><input type="email" id="loginEmail" autocomplete="email" required></label>
+        <label class="field"><span>Senha</span><input type="password" id="loginPassword" autocomplete="current-password" required></label>
+        <div class="auth-actions">
+          <button type="submit" class="primary">Login</button>
+          <button type="button" class="ghost" id="forgotPasswordBtn">Esqueci senha</button>
+        </div>
+      </form>
+      <form id="registerForm" class="auth-form hidden">
+        <label class="field"><span>Nome</span><input type="text" id="registerName" autocomplete="name" required></label>
+        <label class="field"><span>Nick do jogo</span><input type="text" id="registerNick" required></label>
+        <label class="field"><span>Email</span><input type="email" id="registerEmail" autocomplete="email" required></label>
+        <label class="field"><span>Senha</span><input type="password" id="registerPassword" autocomplete="new-password" required></label>
+        <div class="auth-actions">
+          <button type="submit" class="primary">Criar conta</button>
+          <button type="button" class="ghost" data-auth-tab="login">Voltar ao login</button>
+        </div>
+      </form>
+      <p id="authMessage" class="auth-message hidden"></p>
+    </div>
+  </div>
+  <div id="authLoader" class="auth-loader hidden" aria-hidden="true">
+    <div class="auth-loader-card glass">
+      <div class="loader-ring"></div>
+      <strong>Entrando no sistema...</strong>
+      <small>Sincronizando sua experiência</small>
+    </div>
+  </div>
+  <div class="app-shell">
+    <div class="ambient ambient-1"></div>
+    <div class="ambient ambient-2"></div>
+
+    <header class="topbar glass">
+      <div class="topbar-brand center-brand">
+        <div id="currentViewBadge" class="current-view-badge">Arena 🏟️</div>
+        <p class="brand-pill">SISTEMA AUTOMÁTICO TOP BRS' 🇧🇷</p>
+      </div>
+      <div class="topbar-actions">
+                <button id="manualRefreshBtn" class="ghost small refresh-btn" type="button" aria-label="Atualizar sistema" title="Atualizar sistema">⟳</button>
+                <button id="installBtn" class="ghost small hidden">Instalar</button>
+              </div>
+    </header>
+
+    <main class="content">
+      <section class="hero glass">
+        <div class="hero-copy">
+          <p class="eyebrow">Clã</p>
+          <h2 id="heroClanName">TOP BR’S 🇧🇷⚔️</h2>
+          <div class="hero-tags hero-tags-minimal"></div>
+        </div>
+        <div class="hero-controls">
+          <div class="hero-picker">
+            <span class="picker-label">MÊS ATIVO</span>
+            <div id="monthChipBar" class="hero-chipbar month-chipbar"></div>
+            <select id="monthSelect" class="sr-only" aria-label="Mês ativo"></select>
+          </div>
+          <div class="hero-picker" id="weekHeroPicker">
+            <span class="picker-label">SEMANA FOCO</span>
+            <div id="weekChipBar" class="hero-chipbar week-chipbar"></div>
+            <select id="weekSelect" class="sr-only" aria-label="Semana foco">
+              <option value="1">Semana 1</option>
+              <option value="2">Semana 2</option>
+              <option value="3">Semana 3</option>
+              <option value="4">Semana 4</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section id="arenaView" class="view active">
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <div class="split two">
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Pódio elite</p>
+                <h3>Domínio da arena</h3>
+              </div>
+              <button class="ghost small" id="shareRankingBtn">Gerar card</button>
+            </div>
+            <div id="podium"></div>
+          </section>
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Meta do clã</p>
+                <h3>Progresso do mês</h3>
+              </div>
+              <button class="ghost small" data-open-goals>Editar metas</button>
+            </div>
+            <div id="goalPanel"></div>
+          </section>
+        </div>
+
+        <section class="panel glass">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Top 8</p>
+              <h3>Ranking lendário</h3>
+            </div>
+            <div class="segmented">
+              <button class="seg active" data-rank-mode="elite">Score ELITE</button>
+              <button class="seg" data-rank-mode="integrated">Score Integrado</button>
+            </div>
+          </div>
+          <div id="rankingList" class="ranking-list"></div>
+        </section>
+
+        <div class="split two">
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Modo líder</p>
+                <h3>Ações imediatas</h3>
+              </div>
+            </div>
+            <div id="leaderActions"></div>
+          </section>
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Pulso da temporada</p>
+                <h3>Resumo anual</h3>
+              </div>
+            </div>
+            <div id="annualPulse"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="warView" class="view">
+        <section class="panel glass">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Controle total</p>
+              <h3>Guerra — semana selecionada</h3>
+            </div>
+            <div class="segmented">
+              <button class="seg active" data-war-filter="all">Todos</button>
+              <button class="seg" data-war-filter="risk">Risco</button>
+              <button class="seg" data-war-filter="perfect">16/16</button>
+            </div>
+          </div>
+          <div id="warBoard"></div>
+        </section>
+      </section>
+
+      <section id="tournamentView" class="view">
+        <div class="split two">
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Torneio semanal</p>
+                <h3>Marcação rápida</h3>
+              </div>
+            </div>
+            <div id="tournamentEditor"></div>
+          </section>
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Classificação</p>
+                <h3>Placar mensal</h3>
+              </div>
+            </div>
+            <div id="tournamentBoard"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="classificationView" class="view">
+        <section class="panel glass">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Classificação mensal</p>
+              <h3>Tabela de pontuação do clã</h3>
+            </div>
+          </div>
+          <div id="classificationBoard"></div>
+        </section>
+      </section>
+
+      <section id="eliteView" class="view">
+        <div class="split two">
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Seleção elite</p>
+                <h3>Candidatos automáticos</h3>
+              </div>
+            </div>
+            <div id="eliteBoard"></div>
+          </section>
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Histórico</p>
+                <h3>Decisões do sistema</h3>
+              </div>
+            </div>
+            <div id="historyBoard"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="membersView" class="view">
+        <section class="panel glass">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Membros</p>
+              <h3>Elenco do clã</h3>
+            </div>
+            <button class="primary small" id="addMemberBtn">Novo membro</button>
+          </div>
+          <div id="membersGrid" class="members-grid"></div>
+        </section>
+      </section>
+
+      <section id="usersView" class="view">
+        <section class="panel glass">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Usuários</p>
+              <h3>Controle de acessos</h3>
+            </div>
+          </div>
+          <div id="usersBoard"></div>
+        </section>
+      </section>
+
+      <section id="vaultView" class="view">
+        <div class="split two">
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Cofre</p>
+                <h3>Backup e restore</h3>
+              </div>
+            </div>
+            <div class="vault-actions">
+              <button class="primary" id="exportBtn">Exportar backup JSON</button>
+              <label class="file-button">
+                <input type="file" id="importInput" accept=".json,application/json">
+                Importar backup
+              </label>
+              <button class="ghost" id="restoreSeedBtn">Restaurar base V5.5.10</button>
+              <button class="ghost danger" id="resetBtn">Limpar app</button>
+            </div>
+            <p class="helper">V5.0.1 com correção forte de cache/PWA para evitar carregamento parcial.</p>
+          </section>
+          <section class="panel glass">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Insights</p>
+                <h3>Radar do clã</h3>
+              </div>
+            </div>
+            <div id="vaultInsights"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <small>sistema automático top brs' 🇧🇷 • v6.0 firebase realtime</small>
+      <small class="creator-credit">Criador: Anderson Pedro - Todos direitos reservados.®️</small>
+    </footer>
+
+    <aside id="sideDrawer" class="side-drawer">
+      <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+      <div class="drawer-panel glass">
+        <div class="drawer-head">
+          <div>
+            <p class="eyebrow">Menu rápido</p>
+            <h3>Navegação</h3>
+          </div>
+          <button id="profileMenuBtn" class="profile-menu-btn" type="button" aria-label="Perfil">
+            <span id="profileAvatar" class="profile-avatar">👤</span>
+          </button>
+        </div>
+        <div id="drawerProfileSummary" class="drawer-profile-summary hidden"></div>
+        <div class="drawer-menu">
+          <button class="drawer-link active" data-view="arenaView">Arena 🏟️</button>
+          <button class="drawer-link" data-view="warView">Guerra ⚔️</button>
+          <button class="drawer-link" data-view="tournamentView">Torneio 🏆</button>
+          <button class="drawer-link" data-view="classificationView">Classificação 📊</button>
+          <button class="drawer-link" data-view="eliteView">Elite 👑</button>
+          <button class="drawer-link" data-view="membersView">Membros 👥</button>
+          <button class="drawer-link" data-view="usersView">Usuários 🪪</button>
+          <button class="drawer-link" data-view="vaultView">Cofre 🔐</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+    <button id="backToTopBtn" class="back-to-top" aria-label="Voltar ao topo">↑</button>
+
+  <div id="memberModal" class="modal hidden">
+    <div class="modal-card glass">
+      <button class="modal-close" data-close-modal>×</button>
+      <div id="memberModalBody"></div>
+    </div>
+  </div>
+
+  <div id="goalModal" class="modal hidden">
+    <div class="modal-card glass narrow">
+      <button class="modal-close" data-close-goal>×</button>
+      <form id="goalForm" class="stack">
+        <h3>Metas do mês</h3>
+        <label class="field">
+          <span>Meta de ataques</span>
+          <input type="number" id="goalAttacksInput" min="0" step="1">
+        </label>
+        <label class="field">
+          <span>Meta de torneio</span>
+          <input type="number" id="goalTournamentInput" min="0" step="1">
+        </label>
+        <button class="primary" type="submit">Salvar metas</button>
+      </form>
+    </div>
+  </div>
+
+
+  <div id="vaultAccessModal" class="modal vault-lock-modal hidden" aria-hidden="true">
+    <div class="modal-card glass narrow vault-lock-card">
+      <div class="vault-lock-icon">🔒</div>
+      <h3>Acesso Negado🔒</h3>
+      <p class="helper">Digite a senha para abrir o Cofre.</p>
+      <form id="vaultAccessForm" class="stack">
+        <label class="field">
+          <span>Senha do Cofre</span>
+          <input type="password" id="vaultPasswordInput" class="vault-password-input" placeholder="Digite a senha" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false">
+        </label>
+        <p id="vaultAccessError" class="vault-access-error hidden">Senha incorreta</p>
+        <div class="actions">
+          <button type="submit" class="primary">Entrar</button>
+          <button type="button" class="ghost" id="vaultAccessCancelBtn">Voltar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <div id="profilePopover" class="modal hidden profile-popover-modal">
+    <div class="modal-card glass narrow profile-popover-card">
+      <div id="profilePopoverHeader" class="profile-popover-header"></div>
+      <div class="profile-popover-actions">
+        <button type="button" class="ghost profile-action-btn" id="changePasswordOpenBtn">🔑 Alterar senha</button>
+        <button type="button" class="ghost danger profile-action-btn" id="logoutBtn">🚪 Sair</button>
+      </div>
+    </div>
+  </div>
+  <div id="changePasswordModal" class="modal hidden">
+    <div class="modal-card glass narrow auth-action-card">
+      <button class="modal-close" type="button" data-close-change-password>×</button>
+      <form id="changePasswordForm" class="stack">
+        <h3>Alterar senha</h3>
+        <label class="field"><span>Senha atual</span><input type="password" id="currentPasswordInput" autocomplete="current-password" required></label>
+        <label class="field"><span>Senha nova</span><input type="password" id="newPasswordInput" autocomplete="new-password" required></label>
+        <label class="field"><span>Confirmar senha</span><input type="password" id="confirmPasswordInput" autocomplete="new-password" required></label>
+        <button type="submit" class="primary">Salvar nova senha</button>
+        <p id="changePasswordMessage" class="auth-message hidden"></p>
+      </form>
+    </div>
+  </div>
+  <div id="forgotPasswordModal" class="modal hidden">
+    <div class="modal-card glass narrow auth-action-card">
+      <button class="modal-close" type="button" data-close-forgot-password>×</button>
+      <form id="forgotPasswordForm" class="stack">
+        <h3>Esqueci minha senha</h3>
+        <label class="field"><span>Email</span><input type="email" id="forgotPasswordEmail" autocomplete="email" required></label>
+        <button type="submit" class="primary">Enviar recuperação</button>
+        <p id="forgotPasswordMessage" class="auth-message hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <div id="userEditModal" class="modal hidden user-edit-modal">
+    <div class="modal-card glass narrow user-edit-card">
+      <button class="modal-close" type="button" data-close-user-edit>×</button>
+      <div id="userEditBody"></div>
+    </div>
+  </div>
+
+
+  <div id="createMemberModal" class="modal hidden">
+    <div class="modal-card glass narrow member-create-card">
+      <button class="modal-close" data-close-create-member>×</button>
+      <form id="createMemberForm" class="stack">
+        <h3>Novo membro</h3>
+        <label class="field">
+          <span>Nick</span>
+          <input type="text" id="createMemberNick" placeholder="Digite o nick do jogador" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Cargo</span>
+          <select id="createMemberRole">
+            <option value="Líder">Líder 👑</option>
+            <option value="Colíder">Colíder ⚔️</option>
+            <option value="Ancião" selected>Ancião 🛡️</option>
+          </select>
+        </label>
+        <div class="actions">
+          <button class="primary" type="submit">Criar membro</button>
+          <button class="ghost" type="button" data-close-create-member>Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <canvas id="shareCanvas" width="1080" height="1350" class="hidden"></canvas>
+
+  <div id="menuHint" class="menu-swipe-hint hidden" aria-hidden="true"><div class="menu-swipe-arrow">←</div><div class="menu-swipe-copy">Deslize da direita para esquerda para ver o menu.</div></div>
+
+  <script src="data.js"></script>
+  <script src="firebase-config.js"></script>
+  <script type="module" src="firebase-sync.js"></script>
+  <script src="app.js"></script>
+  <script type="module" src="auth-ui.js"></script>
+</body>
+</html>
